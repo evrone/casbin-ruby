@@ -18,7 +18,12 @@ module Casbin
 
       def load_model(path)
         cfg = Casbin::Config::Config.new_config(path)
-        SECTION_NAME_MAP.each_key { |key| load_section(cfg, key.to_s) }
+        load_sections(cfg)
+      end
+
+      def load_model_from_text(text)
+        cfg = Casbin::Config::Config.new_config_from_text(text)
+        load_sections(cfg)
       end
 
       def add_def(sec, key, value)
@@ -29,6 +34,16 @@ module Casbin
 
         model[sec] ||= {}
         model[sec][key] = ast
+      end
+
+      def print_model
+        logger.info 'Model:'
+
+        model.each do |k, v|
+          v.each do |i, j|
+            logger.info "#{k}.#{i}: #{j.value}"
+          end
+        end
       end
 
       private
@@ -46,6 +61,10 @@ module Casbin
         loop.with_index do |_, i|
           break unless load_assertion(cfg, sec, "#{sec}#{get_key_suffix(i + 1)}")
         end
+      end
+
+      def load_sections(cfg)
+        SECTION_NAME_MAP.each_key { |key| load_section(cfg, key.to_s) }
       end
 
       def load_assertion(cfg, sec, key)

@@ -1,12 +1,48 @@
 # frozen_string_literal: true
 
+require 'logger'
+
 module Casbin
   module Model
     class Policy
-      attr_reader :model
+      attr_reader :model, :logger
 
       def initialize
         @model = {}
+        @logger = Logger.new($stdout)
+      end
+
+      # initializes the roles in RBAC.
+      def build_role_links(rm)
+        return unless model.key? 'g'
+
+        model['g'].each_value do |ast|
+          ast.build_role_links(rm)
+        end
+      end
+
+      # Log using info
+      def print_policy
+        logger.info 'Policy:'
+
+        %w[p g].each do |sec|
+          next unless model.key? sec
+
+          model[sec].each do |key, ast|
+            logger.info "#{key} : #{ast.value} : #{ast.policy}"
+          end
+        end
+      end
+
+      # clears all current policy.
+      def clear_policy
+        %w[p g].each do |sec|
+          next unless model.key? sec
+
+          model[sec].each do |key, _ast|
+            model[sec][key].policy = []
+          end
+        end
       end
 
       # adds a policy rule to the model.
@@ -14,6 +50,35 @@ module Casbin
         return false if has_policy(sec, ptype, rule)
 
         model[sec][ptype].policy << rule
+      end
+
+      # adds policy rules to the model.
+      def add_policies(sec, ptype, rules)
+        rules.each do |rule|
+          return false if has_policy(sec, ptype, rule)
+        end
+
+        rules.each do |rule|
+          model[sec][ptype].policy.append(rule)
+        end
+
+        true
+      end
+
+      # update a policy rule from the model.
+      def update_policy(sec, ptype, old_rule, new_rule)
+        return false unless has_policy(sec, ptype, old_rule)
+
+        remove_policy(sec, ptype, old_rule) && add_policy(sec, ptype, new_rule)
+      end
+
+      # update policy rules from the model.
+      def update_policies(sec, ptype, old_rules, new_rules)
+        old_rules.each do |rule|
+          return false unless has_policy(sec, ptype, rule)
+        end
+
+        remove_policies(sec, ptype, old_rules) && add_policies(sec, ptype, new_rules)
       end
 
       # gets all rules in a policy.
@@ -36,6 +101,21 @@ module Casbin
         return false unless has_policy(sec, ptype, rule)
 
         model[sec][ptype].policy.delete(rule)
+      end
+
+      # removes policy rules from the model.
+      # For some reason, the behaviour is different from behaviour the in add_policies
+      # (we can remove just part of rules)
+      def remove_policies(sec, ptype, rules)
+        rules.each do |rule|
+          return false unless has_policy(sec, ptype, rule)
+
+          model[sec][ptype].policy.delete(rule)
+
+          return false if model[sec][ptype].policy.include? rule
+        end
+
+        true
       end
 
       # removes policy rules based on field filters from the model.
