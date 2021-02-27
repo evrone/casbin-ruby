@@ -36,14 +36,14 @@ module Casbin
         def save_policy_file(model)
           # 'w:UTF-8' required for Windows
           File.open(file_path, 'w:UTF-8') do |file|
-            file.write %w[p g].flat_map { |root_key| policy_lines(model, root_key) }.join "\n"
+            file.write %w[p g].map { |root_key| policy_lines(model, root_key) }.flatten.join "\n"
           end
         end
 
         def policy_lines(model, root_key)
           return [] unless model.model.key?(root_key)
 
-          model.model[root_key].each do |key, ast|
+          model.model[root_key].map do |key, ast|
             ast.policy.map { |policy_values| "#{key}, #{policy_values.join ', '}" }
           end
         end
