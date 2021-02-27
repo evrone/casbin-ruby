@@ -247,16 +247,7 @@ module Casbin
 
       result = effector.merge_effects(model.model['e']['e'].value, policy_effects, matcher_results)
 
-      # Log request.
-
-      req_str = "Request: #{rvals.map(&:to_s).join ', '} ---> #{result}"
-
-      if result
-        logger.info(req_str)
-      else
-        # leaving this in error for now, if it's very noise this can be changed to info or debug
-        logger.error(req_str)
-      end
+      log_request(rvals, result)
 
       result
     end
@@ -285,6 +276,17 @@ module Casbin
 
     def get_expression(*args)
       self.class.get_expression(*args)
+    end
+
+    def log_request(rvals, result)
+      req_str = "Request: #{rvals.map(&:to_s).join ', '} ---> #{result}"
+
+      if result
+        logger.info(req_str)
+      else
+        # leaving this in error for now, if it's very noise this can be changed to info or debug
+        logger.error(req_str)
+      end
     end
   end
 end
