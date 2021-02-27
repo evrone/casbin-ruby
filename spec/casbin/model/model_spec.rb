@@ -12,8 +12,8 @@ describe Casbin::Model::Model do
   let(:rbac_config) { get_examples('rbac_model.conf') }
   let(:with_domains_config) { get_examples('rbac_with_domains_model.conf') }
 
-  let(:rule1) { %w[admin domain1 data1 read] }
-  let(:rule2) { %w[admin domain1 data2 write] }
+  let(:rule1) { %w[admin data1 read] }
+  let(:rule2) { %w[admin data2 write] }
 
   describe '#load_model_from_text' do
     let(:text) do
@@ -327,8 +327,10 @@ describe Casbin::Model::Model do
   end
 
   it '#remove_filtered_policy' do
+    domain_rule = %w[admin domain1 data1 read]
+
     model.load_model(with_domains_config)
-    model.add_policy('p', 'p', rule1)
+    model.add_policy('p', 'p', domain_rule)
 
     res = model.remove_filtered_policy('p', 'p', 1, 'domain1', 'data1')
     expect(res).to be_truthy
