@@ -271,7 +271,7 @@ module Casbin
     end
 
     def self.get_expression(expr, functions = nil)
-      Util::SimpleEval.new expr.gsub('&&', 'and').gsub('||', 'or').gsub('!', 'not'), functions
+      Util::SimpleEval.new expr, functions
     end
 
     def get_expression(*args)
