@@ -2,15 +2,12 @@
 
 require 'casbin/model/model'
 require 'casbin/rbac/default_role_manager/role_manager'
-require 'support/examples'
+require 'support/model_configs_context'
 
 describe Casbin::Model::Model do
-  include Examples
+  include_context 'with model configs'
 
   let(:model) { described_class.new }
-  let(:base_config) { get_examples('basic_model.conf') }
-  let(:rbac_config) { get_examples('rbac_model.conf') }
-  let(:with_domains_config) { get_examples('rbac_with_domains_model.conf') }
 
   let(:rule1) { %w[admin data1 read] }
   let(:rule2) { %w[admin data2 write] }
@@ -18,7 +15,7 @@ describe Casbin::Model::Model do
   describe '#load_model_from_text' do
     let(:text) do
       text = nil
-      File.open(base_config, 'r:UTF-8') do |f|
+      File.open(basic_config, 'r:UTF-8') do |f|
         text = f.readlines.join
       end
 
@@ -37,7 +34,7 @@ describe Casbin::Model::Model do
     let(:rm) { Casbin::Rbac::DefaultRoleManager::RoleManager.new(1) }
 
     context 'without roles' do
-      before { model.load_model(base_config) }
+      before { model.load_model(basic_config) }
 
       it { expect(model.build_role_links(rm)).to be_nil }
     end
@@ -123,14 +120,14 @@ describe Casbin::Model::Model do
   end
 
   it '#get_policy' do
-    model.load_model(base_config)
+    model.load_model(basic_config)
     model.add_policy('p', 'p', rule1)
 
     expect(model.get_policy('p', 'p') == [rule1]).to be_truthy
   end
 
   it '#has_policy' do
-    model.load_model(base_config)
+    model.load_model(basic_config)
     model.add_policy('p', 'p', rule1)
 
     expect(model.has_policy('p', 'p', rule1)).to be_truthy
@@ -138,7 +135,7 @@ describe Casbin::Model::Model do
 
   describe '#add_policy' do
     it 'adds policy' do
-      model.load_model(base_config)
+      model.load_model(basic_config)
       expect(model.has_policy('p', 'p', rule1)).to be_falsey
 
       expect(model.add_policy('p', 'p', rule1)).to be_truthy
@@ -166,7 +163,7 @@ describe Casbin::Model::Model do
   describe '#add_policies' do
     subject { model.add_policies('p', 'p', [rule1, rule2]) }
 
-    before { model.load_model(base_config) }
+    before { model.load_model(basic_config) }
 
     it 'adds policies' do
       expect(model.has_policy('p', 'p', rule1)).to be_falsey
@@ -196,7 +193,7 @@ describe Casbin::Model::Model do
   describe '#update_policy' do
     subject { model.update_policy('p', 'p', rule1, rule2) }
 
-    before { model.load_model(base_config) }
+    before { model.load_model(basic_config) }
 
     context 'without old policy' do
       before { model.add_policy('p', 'p', rule2) }
@@ -233,7 +230,7 @@ describe Casbin::Model::Model do
     let(:rule3) { %w[admin2 domain1 data1 read] }
     let(:rule4) { %w[admin2 domain1 data2 read] }
 
-    before { model.load_model(base_config) }
+    before { model.load_model(basic_config) }
 
     context 'without some of old policies' do
       before { model.add_policy('p', 'p', rule2) }
@@ -269,7 +266,7 @@ describe Casbin::Model::Model do
   describe '#remove_policy' do
     subject { model.remove_policy('p', 'p', rule1) }
 
-    before { model.load_model(base_config) }
+    before { model.load_model(basic_config) }
 
     describe 'without removed policy' do
       it 'does nothing' do
@@ -295,7 +292,7 @@ describe Casbin::Model::Model do
   describe '#remove_policies' do
     subject {  model.remove_policies('p', 'p', [rule1, rule2]) }
 
-    before { model.load_model(base_config) }
+    before { model.load_model(basic_config) }
 
     describe 'without some of removed policies' do
       before { model.add_policy('p', 'p', rule1) }
@@ -329,7 +326,7 @@ describe Casbin::Model::Model do
   it '#remove_filtered_policy' do
     domain_rule = %w[admin domain1 data1 read]
 
-    model.load_model(with_domains_config)
+    model.load_model(rbac_with_domains_config)
     model.add_policy('p', 'p', domain_rule)
 
     res = model.remove_filtered_policy('p', 'p', 1, 'domain1', 'data1')
