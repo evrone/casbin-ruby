@@ -8,7 +8,7 @@ require 'casbin/persist/adapters/file_adapter'
 require 'casbin/rbac/default_role_manager/role_manager'
 require 'casbin/util'
 require 'casbin/util/builtin_operators'
-require 'casbin/util/simple_eval'
+require 'casbin/util/evaluator'
 
 require 'logger'
 
@@ -173,7 +173,7 @@ module Casbin
       exp_string = model.model['m']['m'].value
 
       has_eval = Util.has_eval(exp_string)
-      expression = get_expression(exp_string, functions) unless has_eval
+      expression = exp_string unless has_eval
 
       policy_effects = Set.new
       matcher_results = Set.new
@@ -196,10 +196,10 @@ module Casbin
             rule_names = Util.get_eval_value(exp_string)
             rules = rule_names.map { |rule_name| Util.escape_assertion p_parameters[rule_name] }
             exp_with_rule = Util.replace_eval(exp_string, rules)
-            expression = get_expression(exp_with_rule, functions)
+            expression = exp_with_rule
           end
 
-          result = expression.eval(parameters)
+          result = evaluate expression, functions.merge(parameters)
 
           case result
           when TrueClass, FalseClass
@@ -240,7 +240,7 @@ module Casbin
 
         model.model['p']['p'].tokens.each { |token| parameters[token] = '' }
 
-        result = expression.eval(parameters)
+        result = evaluate expression, functions.merge(parameters)
 
         policy_effects.add result ? Effect::Effector::ALLOW : Effect::Effector::INDETERMINATE
       end
@@ -270,12 +270,8 @@ module Casbin
       self.auto_build_role_links = true
     end
 
-    def self.get_expression(expr, functions = nil)
-      Util::SimpleEval.new expr, functions
-    end
-
-    def get_expression(*args)
-      self.class.get_expression(*args)
+    def evaluate(expr, names = nil)
+      Util::Evaluator.eval expr, names
     end
 
     def log_request(rvals, result)
