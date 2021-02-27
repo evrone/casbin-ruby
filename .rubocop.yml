@@ -37,7 +37,10 @@ RSpec/MessageSpies:
   Enabled: false
 
 Rspec/MultipleMemoizedHelpers:
-  Max: 10
+  Max: 15
+
+RSpec/NamedSubject:
+  Enabled: false
 
 RSpec/NestedGroups:
   MaxNesting: 7

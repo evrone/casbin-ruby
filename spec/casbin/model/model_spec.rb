@@ -136,23 +136,43 @@ describe Casbin::Model::Model do
     expect(model.has_policy('p', 'p', rule1)).to be_truthy
   end
 
-  it '#add_policy' do
-    model.load_model(base_config)
+  describe '#add_policy' do
+    it 'adds policy' do
+      model.load_model(base_config)
+      expect(model.has_policy('p', 'p', rule1)).to be_falsey
 
-    expect(model.has_policy('p', 'p', rule1)).to be_falsey
+      expect(model.add_policy('p', 'p', rule1)).to be_truthy
 
-    model.add_policy('p', 'p', rule1)
-    expect(model.has_policy('p', 'p', rule1)).to be_truthy
+      expect(model.has_policy('p', 'p', rule1)).to be_truthy
+    end
+
+    it 'adds role policy' do
+      model.load_model(rbac_config)
+      p_rule1 = %w[alice data1 read]
+      model.add_policy('p', 'p', p_rule1)
+      expect(model.has_policy('p', 'p', p_rule1)).to be_truthy
+
+      p_rule2 = %w[data2_admin data2 read]
+      model.add_policy('p', 'p', p_rule2)
+      expect(model.has_policy('p', 'p', p_rule2)).to be_truthy
+
+      g_rule = %w[alice data2_admin]
+      model.add_policy('g', 'g', g_rule)
+      expect(model.get_policy('p', 'p') == [p_rule1, p_rule2]).to be_truthy
+      expect(model.get_policy('g', 'g') == [g_rule]).to be_truthy
+    end
   end
 
   describe '#add_policies' do
+    subject { model.add_policies('p', 'p', [rule1, rule2]) }
+
     before { model.load_model(base_config) }
 
     it 'adds policies' do
       expect(model.has_policy('p', 'p', rule1)).to be_falsey
       expect(model.has_policy('p', 'p', rule2)).to be_falsey
 
-      model.add_policies('p', 'p', [rule1, rule2])
+      expect(subject).to be_truthy
 
       expect(model.has_policy('p', 'p', rule1)).to be_truthy
       expect(model.has_policy('p', 'p', rule2)).to be_truthy
@@ -165,7 +185,7 @@ describe Casbin::Model::Model do
         expect(model.has_policy('p', 'p', rule1)).to be_falsey
         expect(model.has_policy('p', 'p', rule2)).to be_truthy
 
-        model.add_policies('p', 'p', [rule1, rule2])
+        expect(subject).to be_falsey
 
         expect(model.has_policy('p', 'p', rule1)).to be_falsey
         expect(model.has_policy('p', 'p', rule2)).to be_truthy
@@ -173,33 +193,19 @@ describe Casbin::Model::Model do
     end
   end
 
-  it '#add_role_policy' do
-    model.load_model(rbac_config)
-    p_rule1 = %w[alice data1 read]
-    model.add_policy('p', 'p', p_rule1)
-    expect(model.has_policy('p', 'p', p_rule1)).to be_truthy
-
-    p_rule2 = %w[data2_admin data2 read]
-    model.add_policy('p', 'p', p_rule2)
-    expect(model.has_policy('p', 'p', p_rule2)).to be_truthy
-
-    g_rule = %w[alice data2_admin]
-    model.add_policy('g', 'g', g_rule)
-    expect(model.get_policy('p', 'p') == [p_rule1, p_rule2]).to be_truthy
-    expect(model.get_policy('g', 'g') == [g_rule]).to be_truthy
-  end
-
   describe '#update_policy' do
+    subject { model.update_policy('p', 'p', rule1, rule2) }
+
     before { model.load_model(base_config) }
 
     context 'without old policy' do
       before { model.add_policy('p', 'p', rule2) }
 
-      it 'do nothing' do
+      it 'does nothing' do
         expect(model.has_policy('p', 'p', rule1)).to be_falsey
         expect(model.has_policy('p', 'p', rule2)).to be_truthy
 
-        expect(model.update_policy('p', 'p', rule1, rule2)).to be_falsey
+        expect(subject).to be_falsey
 
         expect(model.has_policy('p', 'p', rule1)).to be_falsey
         expect(model.has_policy('p', 'p', rule2)).to be_truthy
@@ -213,7 +219,7 @@ describe Casbin::Model::Model do
         expect(model.has_policy('p', 'p', rule1)).to be_truthy
         expect(model.has_policy('p', 'p', rule2)).to be_falsey
 
-        model.update_policy('p', 'p', rule1, rule2)
+        expect(subject).to be_truthy
 
         expect(model.has_policy('p', 'p', rule1)).to be_falsey
         expect(model.has_policy('p', 'p', rule2)).to be_truthy
@@ -222,6 +228,8 @@ describe Casbin::Model::Model do
   end
 
   describe '#update_policies' do
+    subject { model.update_policies('p', 'p', [rule1, rule2], [rule3, rule4]) }
+
     let(:rule3) { %w[admin2 domain1 data1 read] }
     let(:rule4) { %w[admin2 domain1 data2 read] }
 
@@ -230,11 +238,11 @@ describe Casbin::Model::Model do
     context 'without some of old policies' do
       before { model.add_policy('p', 'p', rule2) }
 
-      it 'do nothing' do
+      it 'does nothing' do
         expect(model.has_policy('p', 'p', rule1)).to be_falsey
         expect(model.has_policy('p', 'p', rule2)).to be_truthy
 
-        expect(model.update_policies('p', 'p', [rule1, rule2], [rule3, rule4])).to be_falsey
+        expect(subject).to be_falsey
 
         expect(model.has_policy('p', 'p', rule1)).to be_falsey
         expect(model.has_policy('p', 'p', rule2)).to be_truthy
@@ -248,7 +256,7 @@ describe Casbin::Model::Model do
         expect(model.has_policy('p', 'p', rule1)).to be_truthy
         expect(model.has_policy('p', 'p', rule2)).to be_truthy
 
-        model.update_policies('p', 'p', [rule1, rule2], [rule3, rule4])
+        expect(subject).to be_truthy
 
         expect(model.has_policy('p', 'p', rule1)).to be_falsey
         expect(model.has_policy('p', 'p', rule2)).to be_falsey
@@ -258,30 +266,63 @@ describe Casbin::Model::Model do
     end
   end
 
-  it '#remove_policy' do
-    model.load_model(base_config)
-    model.add_policy('p', 'p', rule1)
-    expect(model.has_policy('p', 'p', rule1)).to be_truthy
+  describe '#remove_policy' do
+    subject { model.remove_policy('p', 'p', rule1) }
 
-    model.remove_policy('p', 'p', rule1)
-    expect(model.has_policy('p', 'p', rule1)).to be_falsey
-    expect(model.remove_policy('p', 'p', rule1)).to be_falsey
+    before { model.load_model(base_config) }
+
+    describe 'without removed policy' do
+      it 'does nothing' do
+        expect(model.has_policy('p', 'p', rule1)).to be_falsey
+
+        expect(subject).to be_falsey
+      end
+    end
+
+    describe 'with removed policy' do
+      before { model.add_policy('p', 'p', rule1) }
+
+      it 'removes policy' do
+        expect(model.has_policy('p', 'p', rule1)).to be_truthy
+
+        expect(subject).to be_truthy
+
+        expect(model.has_policy('p', 'p', rule1)).to be_falsey
+      end
+    end
   end
 
   describe '#remove_policies' do
-    before do
-      model.load_model(base_config)
-      model.add_policies('p', 'p', [rule1, rule2])
+    subject {  model.remove_policies('p', 'p', [rule1, rule2]) }
+
+    before { model.load_model(base_config) }
+
+    describe 'without some of removed policies' do
+      before { model.add_policy('p', 'p', rule1) }
+
+      it 'does nothing' do
+        expect(model.has_policy('p', 'p', rule1)).to be_truthy
+        expect(model.has_policy('p', 'p', rule2)).to be_falsey
+
+        expect(subject).to be_falsey
+
+        expect(model.has_policy('p', 'p', rule1)).to be_truthy
+        expect(model.has_policy('p', 'p', rule2)).to be_falsey
+      end
     end
 
-    it 'removes policies' do
-      expect(model.has_policy('p', 'p', rule1)).to be_truthy
-      expect(model.has_policy('p', 'p', rule2)).to be_truthy
+    describe 'with all of removed policies' do
+      before { model.add_policies('p', 'p', [rule1, rule2]) }
 
-      model.remove_policies('p', 'p', [rule1, rule2])
+      it 'removes policies' do
+        expect(model.has_policy('p', 'p', rule1)).to be_truthy
+        expect(model.has_policy('p', 'p', rule2)).to be_truthy
 
-      expect(model.has_policy('p', 'p', rule1)).to be_falsey
-      expect(model.has_policy('p', 'p', rule2)).to be_falsey
+        expect(subject).to be_truthy
+
+        expect(model.has_policy('p', 'p', rule1)).to be_falsey
+        expect(model.has_policy('p', 'p', rule2)).to be_falsey
+      end
     end
   end
 

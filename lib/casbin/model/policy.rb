@@ -50,6 +50,8 @@ module Casbin
         return false if has_policy(sec, ptype, rule)
 
         model[sec][ptype].policy << rule
+
+        true
       end
 
       # adds policy rules to the model.
@@ -58,9 +60,7 @@ module Casbin
           return false if has_policy(sec, ptype, rule)
         end
 
-        rules.each do |rule|
-          model[sec][ptype].policy.append(rule)
-        end
+        model[sec][ptype].policy += rules
 
         true
       end
@@ -88,40 +88,32 @@ module Casbin
 
       # determines whether a model has the specified policy rule.
       def has_policy(sec, ptype, rule)
-        return false unless model.key?(sec)
-        return false unless model[sec].include?(ptype)
-
-        model[sec][ptype].policy.include?(rule)
+        model.key?(sec) && model[sec].key?(ptype) && model[sec][ptype].policy.include?(rule)
       end
 
       # removes a policy rule from the model.
       def remove_policy(sec, ptype, rule)
-        return false unless model.key?(sec)
-        return false unless model[sec].include?(ptype)
         return false unless has_policy(sec, ptype, rule)
 
         model[sec][ptype].policy.delete(rule)
+
+        true
       end
 
       # removes policy rules from the model.
-      # For some reason, the behaviour is different from behaviour the in add_policies
-      # (we can remove just part of rules)
       def remove_policies(sec, ptype, rules)
         rules.each do |rule|
           return false unless has_policy(sec, ptype, rule)
-
-          model[sec][ptype].policy.delete(rule)
-
-          return false if model[sec][ptype].policy.include? rule
         end
+
+        model[sec][ptype].policy.reject! { |rule| rules.include? rule }
 
         true
       end
 
       # removes policy rules based on field filters from the model.
       def remove_filtered_policy(sec, ptype, field_index, *field_values)
-        return false unless model.key?(sec)
-        return false unless model[sec].include?(ptype)
+        return false unless model.key?(sec) && model[sec].include?(ptype)
 
         state = { tmp: [], res: false }
         model[sec][ptype].policy.each do |rule|
