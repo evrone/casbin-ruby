@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'casbin/internal_enforcer'
-require 'casbin/model/model'
-require 'casbin/persist/adapter'
 
 describe Casbin::InternalEnforcer do
   # If we define these methods, this class can be removed
