@@ -26,4 +26,23 @@ describe Casbin::CoreEnforcer do
       end
     end
   end
+
+  describe '#enforce' do
+    subject { enforcer.enforce(*request) }
+
+    let(:model) { basic_config }
+    let(:adapter) { basic_policy_file }
+
+    context 'with existed rule' do
+      let(:request) { %w[admin data1 read] }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'with non-existed rule' do
+      let(:request) { %w[admin data1 write] }
+
+      it { is_expected.to be_falsey }
+    end
+  end
 end

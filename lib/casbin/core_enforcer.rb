@@ -199,7 +199,7 @@ module Casbin
             expression = exp_with_rule
           end
 
-          result = evaluate expression, functions.merge(parameters)
+          result = evaluate expression, functions, parameters
 
           case result
           when TrueClass, FalseClass
@@ -240,7 +240,7 @@ module Casbin
 
         model.model['p']['p'].tokens.each { |token| parameters[token] = '' }
 
-        result = evaluate expression, functions.merge(parameters)
+        result = evaluate expression, functions, parameters
 
         policy_effects.add result ? Effect::Effector::ALLOW : Effect::Effector::INDETERMINATE
       end
@@ -270,8 +270,8 @@ module Casbin
       self.auto_build_role_links = true
     end
 
-    def evaluate(expr, names = nil)
-      Util::Evaluator.eval expr, names
+    def evaluate(expr, funcs = {}, params = {})
+      Util::Evaluator.eval expr, funcs, params
     end
 
     def log_request(rvals, result)
