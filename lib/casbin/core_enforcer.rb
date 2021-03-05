@@ -16,20 +16,17 @@ module Casbin
   # CoreEnforcer defines the core functionality of an enforcer.
   # get_attr/set_attr methods is ported from Python as attr/attr=
   class CoreEnforcer
-    def initialize(model = nil, adapter = nil)
-      # we need some centralized logging management
-      @logger = Logger.new($stdout)
-
+    def initialize(model = nil, adapter = nil, logger: Logger.new($stdout))
       if model.is_a? String
         if adapter.is_a? String
-          init_with_file(model, adapter)
+          init_with_file(model, adapter, logger: logger)
         else
-          init_with_adapter(model, adapter)
+          init_with_adapter(model, adapter, logger: logger)
         end
       elsif adapter.is_a? String
         raise 'Invalid parameters for enforcer.'
       else
-        init_with_model_and_adapter(model, adapter)
+        init_with_model_and_adapter(model, adapter, logger: logger)
       end
     end
 
@@ -37,35 +34,35 @@ module Casbin
     attr_reader :model
 
     # initializes an enforcer with a model file and a policy file.
-    def init_with_file(model_path, policy_path)
+    def init_with_file(model_path, policy_path, logger: Logger.new($stdout))
       a = Persist::Adapters::FileAdapter.new(policy_path)
-      init_with_adapter(model_path, a)
+      init_with_adapter(model_path, a, logger: logger)
     end
 
     # initializes an enforcer with a database adapter.
-    def init_with_adapter(model_path, adapter = nil)
+    def init_with_adapter(model_path, adapter = nil, logger: Logger.new($stdout))
       m = new_model(model_path)
-      init_with_model_and_adapter(m, adapter)
+      init_with_model_and_adapter(m, adapter, logger: logger)
 
       self.model_path = model_path
     end
 
     # initializes an enforcer with a model and a database adapter.
-    def init_with_model_and_adapter(m, adapter = nil)
+    def init_with_model_and_adapter(m, adapter = nil, logger: Logger.new($stdout))
       self.adapter = adapter
 
       self.model = m
       model.print_model
 
-      init
+      init(logger: logger)
 
       # Do not initialize the full policy when using a filtered adapter
       load_policy if adapter && !filtered?
     end
 
     # creates a model.
-    def self.new_model(path = '', text = '')
-      m = Model::Model.new
+    def self.new_model(path = '', text = '', logger: Logger.new($stdout))
+      m = Model::Model.new logger: logger
       if path.length.positive?
         m.load_model(path)
       else
@@ -261,13 +258,15 @@ module Casbin
 
     attr_accessor :matcher_map
 
-    def init
-      self.role_manager = Rbac::DefaultRoleManager::RoleManager.new 10
+    def init(logger: Logger.new($stdout))
+      self.role_manager = Rbac::DefaultRoleManager::RoleManager.new 10, logger: logger
       self.effector = Effect::DefaultEffector.new
 
       self.enabled = true
       self.auto_save = true
       self.auto_build_role_links = true
+
+      @logger = logger
     end
 
     def evaluate(expr, funcs = {}, params = {})
