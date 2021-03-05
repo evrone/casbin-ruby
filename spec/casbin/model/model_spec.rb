@@ -56,11 +56,11 @@ describe Casbin::Model::Model do
   end
 
   describe 'logging' do
+    let(:model) { described_class.new logger: mock_logger }
     let(:mock_logger) { instance_double Logger }
     let(:log) { [] }
 
     before do
-      allow(Logger).to receive(:new).and_return mock_logger
       allow(mock_logger).to receive(:info) { |msg| log.push msg }
 
       model.load_model(rbac_config)

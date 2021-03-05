@@ -7,9 +7,9 @@ module Casbin
     class Policy
       attr_reader :model, :logger
 
-      def initialize
+      def initialize(logger: Logger.new($stdout))
         @model = {}
-        @logger = Logger.new($stdout)
+        @logger = logger
       end
 
       # initializes the roles in RBAC.

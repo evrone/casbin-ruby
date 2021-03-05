@@ -29,7 +29,7 @@ module Casbin
       def add_def(sec, key, value)
         return false if value == ''
 
-        ast = Assertion.new(key: key, value: value)
+        ast = Assertion.new(key: key, value: value, logger: logger)
         %w[r p].include?(sec) ? ast_tokens_set(ast, key) : model_sec_set(ast)
 
         model[sec] ||= {}
