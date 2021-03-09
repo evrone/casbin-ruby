@@ -46,7 +46,7 @@ module Casbin
     def remove_policies(sec, ptype, rules)
       return false unless model.remove_policies(sec, ptype, rules)
 
-      make_persistent :remove_policies,sec, ptype, rules
+      make_persistent :remove_policies, sec, ptype, rules
     end
 
     # removes rules based on field filters from the current policy.
