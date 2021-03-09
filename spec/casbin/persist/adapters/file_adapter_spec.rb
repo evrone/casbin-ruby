@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'tempfile'
+
 require 'casbin/model/model'
 require 'casbin/persist/adapters/file_adapter'
 require 'support/model_configs_context'
@@ -17,7 +19,7 @@ describe Casbin::Persist::Adapters::FileAdapter do
 
     before { model.load_model model_path }
 
-    context 'basic' do
+    context 'with basic' do
       let(:model_path) { basic_config }
       let(:path) { basic_policy_file }
 
@@ -33,7 +35,7 @@ describe Casbin::Persist::Adapters::FileAdapter do
       end
     end
 
-    context 'rbac' do
+    context 'with rbac' do
       let(:model_path) { rbac_config }
       let(:path) { rbac_policy_file }
 
@@ -51,7 +53,7 @@ describe Casbin::Persist::Adapters::FileAdapter do
       end
     end
 
-    context 'rbac_with_domains' do
+    context 'with rbac_with_domains' do
       let(:model_path) { rbac_with_domains_config }
       let(:path) { rbac_with_domains_policy_file }
 
@@ -93,7 +95,7 @@ describe Casbin::Persist::Adapters::FileAdapter do
       file.unlink
     end
 
-    context 'basic' do
+    context 'with basic' do
       let(:model_path) { basic_config }
       let(:expected_file) { basic_policy_file }
 
@@ -105,7 +107,7 @@ describe Casbin::Persist::Adapters::FileAdapter do
       it_behaves_like 'saves correct file'
     end
 
-    context 'rbac' do
+    context 'with rbac' do
       let(:model_path) { rbac_config }
       let(:expected_file) { rbac_policy_file }
 
@@ -121,7 +123,7 @@ describe Casbin::Persist::Adapters::FileAdapter do
       it_behaves_like 'saves correct file'
     end
 
-    context 'rbac_with_domains' do
+    context 'with rbac_with_domains' do
       let(:model_path) { rbac_with_domains_config }
       let(:expected_file) { rbac_with_domains_policy_file }
 
