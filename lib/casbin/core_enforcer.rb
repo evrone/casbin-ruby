@@ -151,22 +151,13 @@ module Casbin
     def enforce(*rvals)
       return false unless enabled?
 
-      functions = fm.get_functions
-
-      if model.model.key? 'g'
-        model.model['g'].each do |key, ast|
-          rm = ast.rm
-          functions[key] = Util::BuiltinOperators.generate_g_function(rm)
-        end
-      end
-
       raise 'model is undefined' unless model.model['m']&.key?('m')
 
       r_tokens = model.model['r']['r'].tokens
-      p_tokens = model.model['p']['p'].tokens
-
       raise 'invalid request size' if r_tokens.length != rvals.length
 
+      p_tokens = model.model['p']['p'].tokens
+      effector_model = model.model['e']['e'].value
       exp_string = model.model['m']['m'].value
 
       has_eval = Util.has_eval(exp_string)
@@ -178,10 +169,10 @@ module Casbin
       r_parameters = {}
       r_tokens.each_with_index { |token, i| r_parameters[token] = rvals[i] }
 
-      policy_len = model.model['p']['p'].policy.length
+      policy_arr = model.model['p']['p'].policy
 
-      if policy_len.positive?
-        model.model['p']['p'].policy.each do |pvals|
+      if policy_arr.any?
+        policy_arr.each do |pvals|
           raise 'invalid policy size' if p_tokens.length != pvals.length
 
           p_parameters = {}
@@ -189,12 +180,7 @@ module Casbin
 
           parameters = r_parameters.merge p_parameters
 
-          if Util.has_eval(exp_string)
-            rule_names = Util.get_eval_value(exp_string)
-            rules = rule_names.map { |rule_name| Util.escape_assertion p_parameters[rule_name] }
-            exp_with_rule = Util.replace_eval(exp_string, rules)
-            expression = exp_with_rule
-          end
+          expression = expression_with_eval(exp_string, p_parameters) if has_eval
 
           result = evaluate expression, functions, parameters
 
@@ -215,34 +201,22 @@ module Casbin
             raise 'matcher result should be true, false or a number'
           end
 
-          if parameters.key? 'p_eft'
-            case parameters['p_eft']
-            when 'allow'
-              policy_effects.add(Effect::Effector::ALLOW)
-            when 'deny'
-              policy_effects.add(Effect::Effector::DENY)
-            else
-              policy_effects.add(Effect::Effector::INDETERMINATE)
-            end
-          else
-            policy_effects.add(Effect::Effector::ALLOW)
-          end
+          policy_effects.add p_eft_effect(parameters)
 
-          break if model.model['e']['e'].value == 'priority(p_eft) || deny'
+          break if effector_model == 'priority(p_eft) || deny'
         end
       else
         raise 'please make sure rule exists in policy when using eval() in matcher' if has_eval
 
-        parameters = r_parameters.clone
-
-        model.model['p']['p'].tokens.each { |token| parameters[token] = '' }
+        parameters = r_parameters
+        p_tokens.each { |token| parameters[token] = '' }
 
         result = evaluate expression, functions, parameters
 
         policy_effects.add result ? Effect::Effector::ALLOW : Effect::Effector::INDETERMINATE
       end
 
-      result = effector.merge_effects(model.model['e']['e'].value, policy_effects, matcher_results)
+      result = effector.merge_effects(effector_model, policy_effects, matcher_results)
 
       log_request(rvals, result)
 
@@ -271,6 +245,40 @@ module Casbin
 
     def evaluate(expr, funcs = {}, params = {})
       Util::Evaluator.eval expr, funcs, params
+    end
+
+    def functions
+      functions = fm.get_functions
+
+      if model.model.key? 'g'
+        model.model['g'].each do |key, ast|
+          rm = ast.rm
+          functions[key] = Util::BuiltinOperators.generate_g_function(rm)
+        end
+      end
+
+      functions
+    end
+
+    def p_eft_effect(params)
+      if params.key? 'p_eft'
+        case params['p_eft']
+        when 'allow'
+          Effect::Effector::ALLOW
+        when 'deny'
+          Effect::Effector::DENY
+        else
+          Effect::Effector::INDETERMINATE
+        end
+      else
+        Effect::Effector::ALLOW
+      end
+    end
+
+    def expression_with_eval(exp_string, p_parameters)
+      rule_names = Util.get_eval_value(exp_string)
+      rules = rule_names.map { |rule_name| Util.escape_assertion p_parameters[rule_name] }
+      Util.replace_eval(exp_string, rules)
     end
 
     def log_request(rvals, result)
