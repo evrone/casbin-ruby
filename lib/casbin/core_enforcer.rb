@@ -161,25 +161,21 @@ module Casbin
       exp_string = model.model['m']['m'].value
 
       has_eval = Util.has_eval(exp_string)
-      expression = exp_string unless has_eval
+      expression = exp_string
 
       policy_effects = Set.new
       matcher_results = Set.new
 
-      r_parameters = {}
-      r_tokens.each_with_index { |token, i| r_parameters[token] = rvals[i] }
+      r_parameters = load_params(r_tokens, rvals)
 
-      policy_arr = model.model['p']['p'].policy
+      policy_rules = model.get_policy('p', 'p')
 
-      if policy_arr.any?
-        policy_arr.each do |pvals|
+      if policy_rules.any?
+        policy_rules.each do |pvals|
           raise 'invalid policy size' if p_tokens.length != pvals.length
 
-          p_parameters = {}
-          p_tokens.each_with_index { |token, i| p_parameters[token] = pvals[i] }
-
+          p_parameters = load_params(p_tokens, pvals)
           parameters = r_parameters.merge p_parameters
-
           expression = expression_with_eval(exp_string, p_parameters) if has_eval
 
           result = evaluate expression, functions, parameters
@@ -245,6 +241,13 @@ module Casbin
 
     def evaluate(expr, funcs = {}, params = {})
       Util::Evaluator.eval expr, funcs, params
+    end
+
+    def load_params(tokens, values)
+      params = {}
+      tokens.each_with_index { |token, i| params[token] = values[i] }
+
+      params
     end
 
     def functions
