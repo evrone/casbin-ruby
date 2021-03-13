@@ -197,7 +197,7 @@ module Casbin
             raise 'matcher result should be true, false or a number'
           end
 
-          policy_effects.add p_eft_effect(parameters)
+          policy_effects.add policy_effect(parameters)
 
           break if effector_model == 'priority(p_eft) || deny'
         end
@@ -263,7 +263,7 @@ module Casbin
       functions
     end
 
-    def p_eft_effect(params)
+    def policy_effect(params)
       if params.key? 'p_eft'
         case params['p_eft']
         when 'allow'

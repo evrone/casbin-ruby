@@ -325,8 +325,9 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
-    # It seems that this does not work in Python. Examples was taken from here:
+    # It seems that this does not implemented in Python version. Examples was taken from here:
     # https://casbin.org/docs/en/priority-model#load-policy-with-priority-explicitly
+    # Related PR in Golang version - https://github.com/casbin/casbin/pull/714/files (they add sorting).
     xcontext 'with explicit priority' do
       let(:model) { explicit_priority_config }
       let(:adapter) { explicit_priority_policy_file }
