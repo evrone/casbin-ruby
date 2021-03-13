@@ -7,6 +7,8 @@ RSpec.shared_context 'with model configs' do
 
   let(:basic_config) { model_config('basic') }
   let(:basic_with_root_config) { model_config('basic_with_root') }
+  let(:basic_without_users_config) { model_config('basic_without_users') }
+  let(:basic_without_resources_config) { model_config('basic_without_resources') }
   let(:rbac_config) { model_config('rbac') }
   let(:rbac_with_domains_config) { model_config('rbac_with_domains') }
 

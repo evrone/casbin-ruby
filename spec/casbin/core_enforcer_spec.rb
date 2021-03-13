@@ -77,6 +77,38 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
+    context 'with basic without users' do
+      let(:model) { basic_without_users_config }
+      let(:adapter) { basic_without_users_policy_file }
+
+      requests = {
+        %w[data1 read] => true,
+        %w[data1 write] => false,
+        %w[data2 read] => false,
+        %w[data2 write] => true,
+        %w[data3 read] => false,
+        %w[data3 write] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
+    context 'with basic without resources' do
+      let(:model) { basic_without_resources_config }
+      let(:adapter) { basic_without_resources_policy_file }
+
+      requests = {
+        %w[alice read] => true,
+        %w[alice write] => false,
+        %w[bob read] => false,
+        %w[bob write] => true,
+        %w[charlie read] => false,
+        %w[charlie write] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
     context 'with rbac' do
       let(:model) { rbac_config }
       let(:adapter) { rbac_policy_file }
