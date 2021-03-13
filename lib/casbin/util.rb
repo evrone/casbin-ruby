@@ -10,9 +10,15 @@ module Casbin
         string.split('#').first.strip
       end
 
-      # escapes the dots in the assertion, because the expression evaluation doesn't support such variable names.
+      # Escapes the dots in the assertion, because the expression evaluation doesn't support such variable names.
+      # Also it replaces attributes with hash syntax (`r.obj.Owner` -> `r_obj['Owner']`), because Keisan functions work
+      # in both regular `f(x)` and postfix `x.f()` notation, where for example `a.f(b,c)` is translated internally
+      # to `f(a,b,c)` - https://github.com/project-eutopia/keisan#specifying-functions
+      # For now we replace attributes for the request elements like `r.sub`, `r.obj`, `r.act`
+      # https://casbin.org/docs/en/abac#how-to-use-abac
+      # We support Unicode in attributes for the compatibility with Golang - https://golang.org/ref/spec#Identifiers
       def escape_assertion(string)
-        string.gsub(/r.obj.([[:alpha:]][[:alnum:]]*)/, 'r_obj[\'\1\']')
+        string.gsub(/r\.(\w+)\.([[:alpha:]_][[:alnum:]_]*)/, 'r_\1[\'\2\']')
               .gsub('r.', 'r_')
               .gsub('p.', 'p_')
       end

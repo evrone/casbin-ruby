@@ -22,9 +22,15 @@ describe Casbin::Util do
 
     context 'with attributes' do
       context 'with latin identifier' do
-        let(:value) { 'm = r.sub == r.obj.Owner' }
+        let(:value) { 'm = r.sub.Chief == r.obj.Owner' }
 
-        it { is_expected.to eq "m = r_sub == r_obj['Owner']" }
+        it { is_expected.to eq "m = r_sub['Chief'] == r_obj['Owner']" }
+      end
+
+      context 'with underscore' do
+        let(:value) { 'm = r.sub == r.obj._Owner' }
+
+        it { is_expected.to eq "m = r_sub == r_obj['_Owner']" }
       end
 
       context 'with unicode identifier' do
