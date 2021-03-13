@@ -11,16 +11,21 @@ module Casbin
       end
 
       # Escapes the dots in the assertion, because the expression evaluation doesn't support such variable names.
-      # Also it replaces attributes with hash syntax (`r.obj.Owner` -> `r_obj['Owner']`), because Keisan functions work
+      # Also it replaces attributes with hash syntax (`r.obj.Owner` -> `r_obj['Owner']`,
+      # `r.obj.Owner.Position` -> `r_obj['Owner']['Position']`), because Keisan functions work
       # in both regular `f(x)` and postfix `x.f()` notation, where for example `a.f(b,c)` is translated internally
       # to `f(a,b,c)` - https://github.com/project-eutopia/keisan#specifying-functions
       # For now we replace attributes for the request elements like `r.sub`, `r.obj`, `r.act`
       # https://casbin.org/docs/en/abac#how-to-use-abac
       # We support Unicode in attributes for the compatibility with Golang - https://golang.org/ref/spec#Identifiers
       def escape_assertion(string)
-        string.gsub(/r\.(\w+)\.([[:alpha:]_][[:alnum:]_]*)/, 'r_\1[\'\2\']')
-              .gsub('r.', 'r_')
-              .gsub('p.', 'p_')
+        string.gsub /r\.(\w+)((?:\.[[:alpha:]_][[:alnum:]_]*)+)/ do |_|
+          param = Regexp.last_match(1)
+          attrs = Regexp.last_match(2)[1..-1].split('.').map do |attr|
+            "['#{attr}']"
+          end.join
+          "r_#{param}#{attrs}"
+        end.gsub('r.', 'r_').gsub('p.', 'p_')
       end
 
       # removes any duplicated elements in a string array.

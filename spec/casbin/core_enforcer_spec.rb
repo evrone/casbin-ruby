@@ -203,15 +203,18 @@ describe Casbin::CoreEnforcer do
       let(:adapter) { abac_with_eval_policy_file }
 
       requests = {
-        [{ 'Age' => 12 }, '/data1', 'read'] => false,
-        [{ 'Age' => 22 }, '/data1', 'read'] => true,
-        [{ 'Age' => 22 }, '/data1', 'write'] => false,
+        [{ 'Age' => 12, 'Position' => { 'Rank' => 1 } }, '/data1', 'read'] => false,
+        [{ 'Age' => 22, 'Position' => { 'Rank' => 1 } }, '/data1', 'read'] => true,
+        [{ 'Age' => 22, 'Position' => { 'Rank' => 1 } }, '/data1', 'write'] => false,
 
-        [{ 'Age' => 22 }, '/data2', 'read'] => false,
-        [{ 'Age' => 22 }, '/data2', 'write'] => true,
-        [{ 'Age' => 62 }, '/data2', 'read'] => false,
+        [{ 'Age' => 22, 'Position' => { 'Rank' => 1 } }, '/data2', 'read'] => false,
+        [{ 'Age' => 22, 'Position' => { 'Rank' => 1 } }, '/data2', 'write'] => true,
+        [{ 'Age' => 62, 'Position' => { 'Rank' => 1 } }, '/data2', 'read'] => false,
 
-        [{ 'Age' => 22 }, '/data3', 'read'] => false
+        [{ 'Age' => 22, 'Position' => { 'Rank' => 1 } }, '/data3', 'read'] => false,
+
+        [{ 'Age' => 22, 'Position' => { 'Rank' => 1 } }, '/special_data', 'read'] => false,
+        [{ 'Age' => 22, 'Position' => { 'Rank' => 2 } }, '/special_data', 'read'] => true
       }
 
       it_behaves_like 'correctly enforces rules', requests

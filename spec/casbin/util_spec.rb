@@ -38,6 +38,12 @@ describe Casbin::Util do
 
         it { is_expected.to eq "m = r_sub == r_obj['Идентификатор1']" }
       end
+
+      context 'with nested identifiers' do
+        let(:value) { 'm = r.sub == r.obj.Owner.Position' }
+
+        it { is_expected.to eq "m = r_sub == r_obj['Owner']['Position']" }
+      end
     end
   end
 
