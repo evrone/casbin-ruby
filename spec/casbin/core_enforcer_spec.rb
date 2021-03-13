@@ -56,6 +56,27 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
+    context 'with basic with root' do
+      let(:model) { basic_with_root_config }
+      let(:adapter) { basic_policy_file }
+
+      requests = {
+        %w[admin data1 read] => true,
+        %w[admin data2 write] => true,
+        %w[admin data1 write] => false,
+        %w[admin data2 read] => false,
+
+        %w[admin2 data1 read] => false,
+
+        %w[root data1 read] => true,
+        %w[root data1 write] => true,
+        %w[root data2 read] => true,
+        %w[root data2 write] => true
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
     context 'with rbac' do
       let(:model) { rbac_config }
       let(:adapter) { rbac_policy_file }
@@ -95,6 +116,33 @@ describe Casbin::CoreEnforcer do
         %w[data_admin domain data1 read] => false,
         %w[data_admin other_domain data1 read] => true,
         %w[data_admin other_domain data1 write] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
+    context 'with implicit priority' do
+      let(:model) { implicit_priority_config }
+      let(:adapter) { implicit_priority_policy_file }
+
+      requests = {
+        %w[admin data1 read] => true,
+        %w[admin data2 read] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
+    # It seems that this does not work in Python. Examples was taken from here:
+    # https://casbin.org/docs/en/priority-model#load-policy-with-priority-explicitly
+    xcontext 'with explicit priority' do
+      let(:model) { explicit_priority_config }
+      let(:adapter) { explicit_priority_policy_file }
+
+      requests = {
+        %w[alice data1 write] => true,
+        %w[bob data2 read] => false,
+        %w[bob data2 write] => true
       }
 
       it_behaves_like 'correctly enforces rules', requests

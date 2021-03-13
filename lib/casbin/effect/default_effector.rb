@@ -22,9 +22,10 @@ module Casbin
           result = true if effects.include?(ALLOW)
         when 'priority(p_eft) || deny'
           effects.each do |eft|
-            next unless eft != INDETERMINATE
+            next if eft == INDETERMINATE
 
             result = eft == ALLOW
+            break
           end
         else
           raise 'unsupported effect'
