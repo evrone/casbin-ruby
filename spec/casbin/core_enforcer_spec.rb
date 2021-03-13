@@ -264,7 +264,7 @@ describe Casbin::CoreEnforcer do
         %w[bob data2 read] => true,
         %w[bob data2 write] => true,
         %w[bob data3 read] => true,
-        %w[bob data3 write] => true,
+        %w[bob data3 write] => true
       }
 
       it_behaves_like 'correctly enforces rules', requests
