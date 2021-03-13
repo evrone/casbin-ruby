@@ -64,9 +64,22 @@ describe Casbin::Util do
     expect(described_class.has_eval('eval(a) && eval(b) && a && b && c')).to be_truthy
   end
 
-  it '.replace_eval' do
-    expect(described_class.replace_eval('eval(a) && eval(b) && c', %w[a b])).to eq '(a) && (b) && c'
-    expect(described_class.replace_eval('a && eval(b) && eval(c)', %w[b c])).to eq 'a && (b) && (c)'
+  describe '#replace_eval' do
+    subject { described_class.replace_eval(expr, rules) }
+
+    context 'with eval in the beginning' do
+      let(:expr) { 'eval(a) && eval(b) && c' }
+      let(:rules) { ['1 + 1', 'a + 1'] }
+
+      it { is_expected.to eq '(1 + 1) && (a + 1) && c' }
+    end
+
+    context 'with eval in the end' do
+      let(:expr) { 'a && eval(b) && eval(c)' }
+      let(:rules) { ['1', '(a + 1) + c'] }
+
+      it { is_expected.to eq 'a && (1) && ((a + 1) + c)' }
+    end
   end
 
   it '.get_eval_value' do

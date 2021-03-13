@@ -12,6 +12,8 @@ RSpec.shared_context 'with policy files' do
   let(:rbac_with_domains_policy_file) { policy_file('rbac_with_domains') }
   let(:rbac_with_resource_roles_policy_file) { policy_file('rbac_with_resource_roles') }
 
+  let(:abac_with_eval_policy_file) { policy_file('abac_with_eval') }
+
   let(:explicit_priority_policy_file) { policy_file('priorities/explicit') }
   let(:implicit_priority_policy_file) { policy_file('priorities/implicit') }
 end

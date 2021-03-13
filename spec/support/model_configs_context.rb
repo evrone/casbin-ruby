@@ -15,6 +15,7 @@ RSpec.shared_context 'with model configs' do
   let(:rbac_with_resource_roles_config) { model_config('rbac_with_resource_roles') }
 
   let(:abac_config) { model_config('abac') }
+  let(:abac_with_eval_config) { model_config('abac_with_eval') }
 
   let(:explicit_priority_config) { model_config('priorities/explicit') }
   let(:implicit_priority_config) { model_config('priorities/implicit') }

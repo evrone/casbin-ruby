@@ -198,6 +198,25 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
+    context 'with abac with eval' do
+      let(:model) { abac_with_eval_config }
+      let(:adapter) { abac_with_eval_policy_file }
+
+      requests = {
+        [{ 'Age' => 12 }, '/data1', 'read'] => false,
+        [{ 'Age' => 22 }, '/data1', 'read'] => true,
+        [{ 'Age' => 22 }, '/data1', 'write'] => false,
+
+        [{ 'Age' => 22 }, '/data2', 'read'] => false,
+        [{ 'Age' => 22 }, '/data2', 'write'] => true,
+        [{ 'Age' => 62 }, '/data2', 'read'] => false,
+
+        [{ 'Age' => 22 }, '/data3', 'read'] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
     context 'with implicit priority' do
       let(:model) { implicit_priority_config }
       let(:adapter) { implicit_priority_policy_file }

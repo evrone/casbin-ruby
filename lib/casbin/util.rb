@@ -45,11 +45,11 @@ module Casbin
 
       # replace all occurrences of function eval with rules
       def replace_eval(expr, rules)
-        rules.each_index do |index|
-          EVAL_REG.match(expr, index) { |math| expr = expr.gsub(math[0], "(#{math[1]})") }
+        i = -1
+        expr.gsub EVAL_REG do |_|
+          i += 1
+          "(#{rules[i]})"
         end
-
-        expr
       end
 
       # returns the parameters of function eval
