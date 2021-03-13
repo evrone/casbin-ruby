@@ -247,6 +247,29 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
+    context 'with deny-override' do
+      let(:model) { deny_override_config }
+      let(:adapter) { deny_override_policy_file }
+
+      requests = {
+        %w[alice data1 read] => true,
+        %w[alice data1 write] => true,
+        %w[alice data2 read] => true,
+        %w[alice data2 write] => false,
+        %w[alice data3 read] => true,
+        %w[alice data3 write] => true,
+
+        %w[bob data1 read] => true,
+        %w[bob data1 write] => true,
+        %w[bob data2 read] => true,
+        %w[bob data2 write] => true,
+        %w[bob data3 read] => true,
+        %w[bob data3 write] => true,
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
     context 'with implicit priority' do
       let(:model) { implicit_priority_config }
       let(:adapter) { implicit_priority_policy_file }

@@ -19,6 +19,8 @@ RSpec.shared_context 'with model configs' do
 
   let(:rest_config) { model_config('rest') }
 
+  let(:deny_override_config) { model_config('deny_override') }
+
   let(:explicit_priority_config) { model_config('priorities/explicit') }
   let(:implicit_priority_config) { model_config('priorities/implicit') }
 end
