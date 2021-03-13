@@ -69,14 +69,14 @@ describe Casbin::Util do
 
     context 'with eval in the beginning' do
       let(:expr) { 'eval(a) && eval(b) && c' }
-      let(:rules) { ['1 + 1', 'a + 1'] }
+      let(:rules) { { 'a' => '1 + 1', 'b' => 'a + 1' } }
 
       it { is_expected.to eq '(1 + 1) && (a + 1) && c' }
     end
 
     context 'with eval in the end' do
       let(:expr) { 'a && eval(b) && eval(c)' }
-      let(:rules) { ['1', '(a + 1) + c'] }
+      let(:rules) { { 'b' => '1', 'c' => '(a + 1) + c' } }
 
       it { is_expected.to eq 'a && (1) && ((a + 1) + c)' }
     end

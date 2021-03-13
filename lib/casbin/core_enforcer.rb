@@ -176,7 +176,7 @@ module Casbin
 
           p_parameters = load_params(p_tokens, pvals)
           parameters = r_parameters.merge p_parameters
-          expression = expression_with_eval(exp_string, p_parameters) if has_eval
+          expression = Util.replace_eval(exp_string, p_parameters) if has_eval
 
           result = evaluate expression, functions, parameters
 
@@ -276,12 +276,6 @@ module Casbin
       else
         Effect::Effector::ALLOW
       end
-    end
-
-    def expression_with_eval(exp_string, p_parameters)
-      rule_names = Util.get_eval_value(exp_string)
-      rules = rule_names.map { |rule_name| Util.escape_assertion p_parameters[rule_name] }
-      Util.replace_eval(exp_string, rules)
     end
 
     def log_request(rvals, result)

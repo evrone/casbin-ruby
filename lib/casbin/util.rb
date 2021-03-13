@@ -45,14 +45,13 @@ module Casbin
 
       # replace all occurrences of function eval with rules
       def replace_eval(expr, rules)
-        i = -1
         expr.gsub EVAL_REG do |_|
-          i += 1
-          "(#{rules[i]})"
+          "(#{escape_assertion rules[Regexp.last_match 1]})"
         end
       end
 
-      # returns the parameters of function eval
+      # For now, it does not used.
+      # Returns the parameters of function eval.
       def get_eval_value(string)
         string.scan(EVAL_REG).flatten
       end
