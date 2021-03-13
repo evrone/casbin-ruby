@@ -9,8 +9,12 @@ RSpec.shared_context 'with model configs' do
   let(:basic_with_root_config) { model_config('basic_with_root') }
   let(:basic_without_users_config) { model_config('basic_without_users') }
   let(:basic_without_resources_config) { model_config('basic_without_resources') }
+
   let(:rbac_config) { model_config('rbac') }
   let(:rbac_with_domains_config) { model_config('rbac_with_domains') }
+  let(:rbac_with_resource_roles_config) { model_config('rbac_with_resource_roles') }
+
+  let(:abac_config) { model_config('abac') }
 
   let(:explicit_priority_config) { model_config('priorities/explicit') }
   let(:implicit_priority_config) { model_config('priorities/implicit') }

@@ -10,6 +10,7 @@ RSpec.shared_context 'with policy files' do
   let(:basic_without_resources_policy_file) { policy_file('basic_without_resources') }
   let(:rbac_policy_file) { policy_file('rbac') }
   let(:rbac_with_domains_policy_file) { policy_file('rbac_with_domains') }
+  let(:rbac_with_resource_roles_policy_file) { policy_file('rbac_with_resource_roles') }
 
   let(:explicit_priority_policy_file) { policy_file('priorities/explicit') }
   let(:implicit_priority_policy_file) { policy_file('priorities/implicit') }

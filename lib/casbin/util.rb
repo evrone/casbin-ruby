@@ -12,7 +12,9 @@ module Casbin
 
       # escapes the dots in the assertion, because the expression evaluation doesn't support such variable names.
       def escape_assertion(string)
-        string.gsub('r.', 'r_').gsub('p.', 'p_')
+        string.gsub(/r.obj.([[:alpha:]][[:alnum:]]*)/, 'r_obj[\'\1\']')
+              .gsub('r.', 'r_')
+              .gsub('p.', 'p_')
       end
 
       # removes any duplicated elements in a string array.

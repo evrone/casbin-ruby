@@ -127,7 +127,7 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
-    context 'with domain rbac' do
+    context 'with rbac with domains' do
       let(:model) { rbac_with_domains_config }
       let(:adapter) { rbac_with_domains_policy_file }
 
@@ -148,6 +148,51 @@ describe Casbin::CoreEnforcer do
         %w[data_admin domain data1 read] => false,
         %w[data_admin other_domain data1 read] => true,
         %w[data_admin other_domain data1 write] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
+    context 'with rbac with resource roles' do
+      let(:model) { rbac_with_resource_roles_config }
+      let(:adapter) { rbac_with_resource_roles_policy_file }
+
+      requests = {
+        %w[alice data1 read] => true,
+        %w[alice data1 write] => true,
+        %w[alice data2 read] => false,
+        %w[alice data2 write] => true,
+        %w[alice data3 read] => false,
+        %w[alice data3 write] => false,
+
+        %w[bob data1 read] => false,
+        %w[bob data1 write] => false,
+        %w[bob data2 read] => false,
+        %w[bob data2 write] => true,
+        %w[bob data3 read] => false,
+        %w[bob data3 write] => false,
+
+        %w[data_group_admin data1 read] => false,
+        %w[data_group_admin data1 write] => true,
+        %w[data_group_admin data2 read] => false,
+        %w[data_group_admin data2 write] => true,
+        %w[data_group_admin data3 read] => false,
+        %w[data_group_admin data3 write] => false,
+
+        %w[diana data1 read] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
+    context 'with abac' do
+      let(:model) { abac_config }
+
+      requests = {
+        ['alice', { 'Owner' => 'alice' }, 'read'] => true,
+        ['alice', { 'Owner' => 'alice' }, 'write'] => true,
+        ['alice', { 'Owner' => 'diana' }, 'read'] => false,
+        ['alice', { 'Owner' => 'diana' }, 'write'] => false
       }
 
       it_behaves_like 'correctly enforces rules', requests

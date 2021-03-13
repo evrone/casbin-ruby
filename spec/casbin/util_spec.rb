@@ -11,9 +11,28 @@ describe Casbin::Util do
     expect(described_class.remove_comments('r.act == p.act')).to eq 'r.act == p.act'
   end
 
-  it '.escape_assertion' do
-    expect(described_class.escape_assertion('m = r.sub == p.sub && r.obj == p.obj && r.act == p.act'))
-      .to eq 'm = r_sub == p_sub && r_obj == p_obj && r_act == p_act'
+  describe '#escape_assertion' do
+    subject { described_class.escape_assertion(value) }
+
+    context 'without attributes' do
+      let(:value) { 'm = r.sub == p.sub && r.obj == p.obj && r.act == p.act' }
+
+      it { is_expected.to eq 'm = r_sub == p_sub && r_obj == p_obj && r_act == p_act' }
+    end
+
+    context 'with attributes' do
+      context 'with latin identifier' do
+        let(:value) { 'm = r.sub == r.obj.Owner' }
+
+        it { is_expected.to eq "m = r_sub == r_obj['Owner']" }
+      end
+
+      context 'with unicode identifier' do
+        let(:value) { 'm = r.sub == r.obj.Идентификатор1' }
+
+        it { is_expected.to eq "m = r_sub == r_obj['Идентификатор1']" }
+      end
+    end
   end
 
   it '.array_remove_duplicates' do
