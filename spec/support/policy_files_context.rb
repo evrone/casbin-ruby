@@ -21,4 +21,6 @@ RSpec.shared_context 'with policy files' do
 
   let(:explicit_priority_policy_file) { policy_file('priorities/explicit') }
   let(:implicit_priority_policy_file) { policy_file('priorities/implicit') }
+
+  let(:ip_policy_file) { policy_file('ip') }
 end

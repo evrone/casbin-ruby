@@ -24,4 +24,6 @@ RSpec.shared_context 'with model configs' do
 
   let(:explicit_priority_config) { model_config('priorities/explicit') }
   let(:implicit_priority_config) { model_config('priorities/implicit') }
+
+  let(:ip_config) { model_config('ip') }
 end

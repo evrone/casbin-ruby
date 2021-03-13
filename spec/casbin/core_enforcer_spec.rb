@@ -327,6 +327,7 @@ describe Casbin::CoreEnforcer do
 
     # It seems that this does not implemented in Python version. Examples was taken from here:
     # https://casbin.org/docs/en/priority-model#load-policy-with-priority-explicitly
+    #
     # Related PR in Golang version - https://github.com/casbin/casbin/pull/714/files
     # (we should add sorting by `p_priority`).
     xcontext 'with explicit priority' do
@@ -337,6 +338,27 @@ describe Casbin::CoreEnforcer do
         %w[alice data1 write] => true,
         %w[bob data2 read] => false,
         %w[bob data2 write] => true
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
+    context 'with IP matching' do
+      let(:model) { ip_config }
+      let(:adapter) { ip_policy_file }
+
+      requests = {
+        %w[192.168.2.1 data1 read] => true,
+        %w[192.168.2.101 data1 read] => true,
+        %w[192.168.1.1 data1 read] => false,
+        %w[192.168.2.101 data1 write] => false,
+        %w[192.168.2.1 data2 read] => false,
+
+        %w[10.0.2.3 data2 write] => true,
+        %w[10.0.5.5 data2 write] => true,
+        %w[10.0.5.5 data2 read] => false,
+        %w[10.1.5.5 data2 write] => false,
+        %w[10.0.5.5 data1 read] => false
       }
 
       it_behaves_like 'correctly enforces rules', requests
