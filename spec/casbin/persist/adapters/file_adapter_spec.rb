@@ -57,18 +57,28 @@ describe Casbin::Persist::Adapters::FileAdapter do
       let(:model_path) { rbac_with_domains_config }
       let(:path) { rbac_with_domains_policy_file }
 
-      let(:p_rule1) { %w[diana domain data read] }
-      let(:p_rule2) { %w[data_admin other_domain data read] }
-      let(:g_rule1) {  %w[alice data_admin] }
-      let(:g_rule2) {  %w[diana data_admin] }
+      let(:p_rules) do
+        [
+          %w[diana domain data1 read],
+          %w[data_admin domain data2 read],
+          %w[data_admin other_domain data1 read]
+        ]
+      end
+
+      let(:g_rules) do
+        [
+          %w[alice data_admin domain],
+          %w[diana data_admin other_domain]
+        ]
+      end
 
       it 'loads correct policies' do
         subject
 
-        [p_rule1, p_rule2].each do |rule|
+        p_rules.each do |rule|
           expect(model.has_policy('p', 'p', rule)).to be_truthy
         end
-        [g_rule1, g_rule2].each do |rule|
+        g_rules.each do |rule|
           expect(model.has_policy('g', 'g', rule)).to be_truthy
         end
       end
@@ -127,14 +137,24 @@ describe Casbin::Persist::Adapters::FileAdapter do
       let(:model_path) { rbac_with_domains_config }
       let(:expected_file) { rbac_with_domains_policy_file }
 
-      let(:p_rule1) { %w[diana domain data read] }
-      let(:p_rule2) { %w[data_admin other_domain data read] }
-      let(:g_rule1) {  %w[alice data_admin] }
-      let(:g_rule2) {  %w[diana data_admin] }
+      let(:p_rules) do
+        [
+          %w[diana domain data1 read],
+          %w[data_admin domain data2 read],
+          %w[data_admin other_domain data1 read]
+        ]
+      end
+
+      let(:g_rules) do
+        [
+          %w[alice data_admin domain],
+          %w[diana data_admin other_domain]
+        ]
+      end
 
       before do
-        model.add_policies 'p', 'p', [p_rule1, p_rule2]
-        model.add_policies 'g', 'g', [g_rule1, g_rule2]
+        model.add_policies 'p', 'p', p_rules
+        model.add_policies 'g', 'g', g_rules
       end
 
       it_behaves_like 'saves correct file'
