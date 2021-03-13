@@ -109,7 +109,7 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
-    context 'with rbac' do
+    context 'with RBAC' do
       let(:model) { rbac_config }
       let(:adapter) { rbac_policy_file }
 
@@ -127,7 +127,7 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
-    context 'with rbac with domains' do
+    context 'with RBAC with domains' do
       let(:model) { rbac_with_domains_config }
       let(:adapter) { rbac_with_domains_policy_file }
 
@@ -153,7 +153,7 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
-    context 'with rbac with resource roles' do
+    context 'with RBAC with resource roles' do
       let(:model) { rbac_with_resource_roles_config }
       let(:adapter) { rbac_with_resource_roles_policy_file }
 
@@ -185,7 +185,7 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
-    context 'with abac' do
+    context 'with ABAC' do
       let(:model) { abac_config }
 
       requests = {
@@ -198,7 +198,7 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
-    context 'with abac with eval' do
+    context 'with ABAC with eval' do
       let(:model) { abac_with_eval_config }
       let(:adapter) { abac_with_eval_policy_file }
 
@@ -215,6 +215,33 @@ describe Casbin::CoreEnforcer do
 
         [{ 'Age' => 22, 'Position' => { 'Rank' => 1 } }, '/special_data', 'read'] => false,
         [{ 'Age' => 22, 'Position' => { 'Rank' => 2 } }, '/special_data', 'read'] => true
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
+    context 'with REST' do
+      let(:model) { rest_config }
+      let(:adapter) { rest_policy_file }
+
+      requests = {
+        %w[alice /alice_data/item GET] => true,
+        %w[alice /alice_data/item POST] => false,
+        %w[alice /alice_data/resource1 GET] => true,
+        %w[alice /alice_data/resource1 POST] => true,
+        %w[alice /cathy_data/item PUT] => false,
+
+        %w[bob /alice_data/resource1 GET] => false,
+        %w[bob /alice_data/resource2 GET] => true,
+        %w[bob /alice_data/resource2 POST] => false,
+        %w[bob /bob_data/resource DELETE] => false,
+        %w[bob /bob_data/resource POST] => true,
+
+        %w[cathy /cathy_data GET] => true,
+        %w[cathy /cathy_data POST] => true,
+        %w[cathy /cathy_data DELETE] => false,
+        %w[cathy /cathy_data/resource GET] => false,
+        %w[cathy /alice_data/resource1 GET] => false
       }
 
       it_behaves_like 'correctly enforces rules', requests
