@@ -14,15 +14,35 @@ describe Casbin::CoreEnforcer do
   let(:watcher) { double 'watcher' }
 
   describe '#initalize' do
+    shared_examples 'creates new enforcer' do
+      it { expect(enforcer).not_to be_nil }
+    end
+
     context 'when model is a string (path)' do
       let(:model) { basic_config }
 
       context 'when adapter is a string (path)' do
         let(:adapter) { basic_policy_file }
 
-        it 'creates new enforcer' do
-          expect(enforcer).not_to be_nil
+        it_behaves_like 'creates new enforcer'
+      end
+
+      context 'when adapter is a special object' do
+        it_behaves_like 'creates new enforcer'
+      end
+    end
+
+    context 'when model is a special object' do
+      context 'when adapter is a string (path)' do
+        let(:adapter) { basic_policy_file }
+
+        it 'raises exception' do
+          expect { enforcer }.to raise_error RuntimeError, 'Invalid parameters for enforcer.'
         end
+      end
+
+      context 'when adapter is a special object' do
+        it_behaves_like 'creates new enforcer'
       end
     end
   end
