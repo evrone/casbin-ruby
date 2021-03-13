@@ -327,7 +327,8 @@ describe Casbin::CoreEnforcer do
 
     # It seems that this does not implemented in Python version. Examples was taken from here:
     # https://casbin.org/docs/en/priority-model#load-policy-with-priority-explicitly
-    # Related PR in Golang version - https://github.com/casbin/casbin/pull/714/files (they add sorting).
+    # Related PR in Golang version - https://github.com/casbin/casbin/pull/714/files
+    # (we should add sorting by `p_priority`).
     xcontext 'with explicit priority' do
       let(:model) { explicit_priority_config }
       let(:adapter) { explicit_priority_policy_file }
