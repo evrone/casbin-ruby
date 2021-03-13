@@ -17,6 +17,7 @@ RSpec.shared_context 'with policy files' do
   let(:rest_policy_file) { policy_file('rest') }
 
   let(:deny_override_policy_file) { policy_file('deny_override') }
+  let(:allow_and_deny_policy_file) { policy_file('allow_and_deny') }
 
   let(:explicit_priority_policy_file) { policy_file('priorities/explicit') }
   let(:implicit_priority_policy_file) { policy_file('priorities/implicit') }
