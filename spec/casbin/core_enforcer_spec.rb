@@ -307,6 +307,27 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
+    context 'with REST (keyMatch2)' do
+      let(:model) { model_config 'rest2' }
+      let(:adapter) { policy_file 'rest2' }
+
+      requests = {
+        %w[alice /alice_data/hello GET] => true,
+        %w[alice /alice_data/other_hello GET] => true,
+        %w[alice /alice_data/hello POST] => false,
+        %w[bob /alice_data/hello GET] => false,
+        %w[alice /alice_data2/hello GET] => false,
+
+        %w[alice /alice_data2/1/using/some GET] => true,
+        %w[alice /alice_data2/1/using/some POST] => false,
+        %w[bob /alice_data2/1/using/some GET] => false,
+        %w[alice /alice_data2/1//some GET] => false,
+        %w[alice /alice_data2/1/some GET] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
     context 'with deny-override' do
       let(:model) { model_config 'deny_override' }
       let(:adapter) { policy_file 'deny_override' }
