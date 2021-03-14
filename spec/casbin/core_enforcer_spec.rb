@@ -424,5 +424,50 @@ describe Casbin::CoreEnforcer do
 
       it_behaves_like 'correctly enforces rules', requests
     end
+
+    context 'with glob' do
+      let(:model) { model_config 'glob' }
+      let(:adapter) { policy_file 'glob' }
+
+      requests = {
+        %w[u1 /foo/1 read] => true,
+        %w[u1 /foo/1/2 read] => false,
+        %w[u1 /foobar read] => false,
+        %w[u1 /some/foo/1 read] => false,
+        %w[u1 other read] => false,
+        %w[u1 /foo/1 write] => false,
+
+        %w[u2 /foo/1 read] => false,
+        %w[u2 /foo/1/2 read] => false,
+        %w[u2 /foobar read] => true,
+        %w[u2 /some/foo/1 read] => false,
+        %w[u2 other read] => false,
+        %w[u2 /foo/1 write] => false,
+
+        %w[u3 /foo/1 read] => false,
+        %w[u3 /foo/1/2 read] => false,
+        %w[u3 /foobar read] => false,
+        %w[u3 /some/foo/1 read] => true,
+        %w[u3 other read] => false,
+        %w[u3 /foo/1 write] => false,
+
+        %w[u4 /foo/1 read] => false,
+        %w[u4 /foo/1/2 read] => false,
+        %w[u4 /foobar read] => false,
+        %w[u4 /some/foo/1 read] => false,
+        %w[u4 other read] => true,
+        %w[u4 /foo/1 write] => false
+
+        # It seems that `**` does not work properly (the behaviour is different from Golang version)
+        # %w[u5 /foo/1 read] => true,
+        # %w[u5 /foo/1/2 read] => true,
+        # %w[u5 /foobar read] => false,
+        # %w[u5 /some/foo/1 read] => false,
+        # %w[u5 other read] => false,
+        # %w[u5 /foo/1 write] => false
+      }
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
   end
 end
