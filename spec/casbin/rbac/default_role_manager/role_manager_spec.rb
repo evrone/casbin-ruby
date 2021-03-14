@@ -2,6 +2,7 @@
 
 require 'logger'
 require 'casbin/rbac/default_role_manager/role_manager'
+require 'casbin/util/builtin_operators'
 
 describe Casbin::Rbac::DefaultRoleManager::RoleManager do
   let(:role_manager) { described_class.new(1) }
@@ -90,7 +91,16 @@ describe Casbin::Rbac::DefaultRoleManager::RoleManager do
     end
 
     context 'with matching function' do
-      before { role_manager.add_matching_func  }
+      before do
+        role_manager.add_matching_func ->(key1, key2) { Casbin::Util::BuiltinOperators.key_match2 key1, key2 }
+        role_manager.add_link '/book/:id', 'book_admin'
+      end
+
+      it 'correctly matches' do
+        expect(role_manager.has_link('/book/1', 'book_admin')).to be_truthy
+        expect(role_manager.has_link('/book/2', 'book_admin')).to be_truthy
+        expect(role_manager.has_link('/other/1', 'book_admin')).to be_falsey
+      end
     end
   end
 
