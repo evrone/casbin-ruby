@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
 require 'casbin/core_enforcer'
-require 'support/model_configs_context'
-require 'support/policy_files_context'
+require 'support/model_helper'
 
 describe Casbin::CoreEnforcer do
-  include_context 'with model configs'
-  include_context 'with policy files'
-
   let(:model) { Casbin::Model::Model.new }
   let(:adapter) { Casbin::Persist::Adapter.new }
   let(:enforcer) { described_class.new model, adapter }
@@ -19,10 +15,10 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'when model is a string (path)' do
-      let(:model) { basic_config }
+      let(:model) { model_config 'basic' }
 
       context 'when adapter is a string (path)' do
-        let(:adapter) { basic_policy_file }
+        let(:adapter) { policy_file 'basic' }
 
         it_behaves_like 'creates new enforcer'
       end
@@ -34,7 +30,7 @@ describe Casbin::CoreEnforcer do
 
     context 'when model is a special object' do
       context 'when adapter is a string (path)' do
-        let(:adapter) { basic_policy_file }
+        let(:adapter) { policy_file 'basic' }
 
         it 'raises exception' do
           expect { enforcer }.to raise_error RuntimeError, 'Invalid parameters for enforcer.'
@@ -61,8 +57,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with basic' do
-      let(:model) { basic_config }
-      let(:adapter) { basic_policy_file }
+      let(:model) { model_config 'basic' }
+      let(:adapter) { policy_file 'basic' }
 
       requests = {
         %w[admin data1 read] => true,
@@ -77,8 +73,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with basic with root' do
-      let(:model) { basic_with_root_config }
-      let(:adapter) { basic_policy_file }
+      let(:model) { model_config 'basic_with_root' }
+      let(:adapter) { policy_file 'basic' }
 
       requests = {
         %w[admin data1 read] => true,
@@ -98,8 +94,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with basic without users' do
-      let(:model) { basic_without_users_config }
-      let(:adapter) { basic_without_users_policy_file }
+      let(:model) { model_config 'basic_without_users' }
+      let(:adapter) { policy_file 'basic_without_users' }
 
       requests = {
         %w[data1 read] => true,
@@ -114,8 +110,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with basic without resources' do
-      let(:model) { basic_without_resources_config }
-      let(:adapter) { basic_without_resources_policy_file }
+      let(:model) { model_config 'basic_without_resources' }
+      let(:adapter) { policy_file 'basic_without_resources' }
 
       requests = {
         %w[alice read] => true,
@@ -130,8 +126,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with RBAC' do
-      let(:model) { rbac_config }
-      let(:adapter) { rbac_policy_file }
+      let(:model) { model_config 'rbac' }
+      let(:adapter) { policy_file 'rbac' }
 
       requests = {
         %w[diana data1 read] => true,
@@ -148,8 +144,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with RBAC with domains' do
-      let(:model) { rbac_with_domains_config }
-      let(:adapter) { rbac_with_domains_policy_file }
+      let(:model) { model_config 'rbac_with_domains' }
+      let(:adapter) { policy_file 'rbac_with_domains' }
 
       requests = {
         %w[diana domain data1 read] => true,
@@ -174,8 +170,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with RBAC with resource roles' do
-      let(:model) { rbac_with_resource_roles_config }
-      let(:adapter) { rbac_with_resource_roles_policy_file }
+      let(:model) { model_config 'rbac_with_resource_roles' }
+      let(:adapter) { policy_file 'rbac_with_resource_roles' }
 
       requests = {
         %w[alice data1 read] => true,
@@ -205,8 +201,26 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
+    context 'with RBAC with pattern' do
+      let(:model) { model_config 'rbac_with_pattern' }
+      let(:adapter) { policy_file 'rbac_with_pattern' }
+
+      requests = {
+        %w[/book/abc data1 GET] => true,
+        %w[/book/1 data1 GET] => true,
+        %w[/book/1 data1 POST] => false,
+        %w[/other/1 data1 GET] => false
+      }
+
+      before do
+        enforcer.role_manager.add_matching_func ->(key1, key2) { Casbin::Util::BuiltinOperators.key_match2 key1, key2 }
+      end
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
     context 'with ABAC' do
-      let(:model) { abac_config }
+      let(:model) { model_config 'abac' }
 
       requests = {
         ['alice', { 'Owner' => 'alice' }, 'read'] => true,
@@ -219,8 +233,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with ABAC with eval' do
-      let(:model) { abac_with_eval_config }
-      let(:adapter) { abac_with_eval_policy_file }
+      let(:model) { model_config 'abac_with_eval' }
+      let(:adapter) { policy_file 'abac_with_eval' }
 
       requests = {
         [{ 'Age' => 12, 'Position' => { 'Rank' => 1 } }, '/data1', 'read'] => false,
@@ -241,8 +255,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with REST' do
-      let(:model) { rest_config }
-      let(:adapter) { rest_policy_file }
+      let(:model) { model_config 'rest' }
+      let(:adapter) { policy_file 'rest' }
 
       requests = {
         %w[alice /alice_data/item GET] => true,
@@ -268,8 +282,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with deny-override' do
-      let(:model) { deny_override_config }
-      let(:adapter) { deny_override_policy_file }
+      let(:model) { model_config 'deny_override' }
+      let(:adapter) { policy_file 'deny_override' }
 
       requests = {
         %w[alice data1 read] => true,
@@ -291,8 +305,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with allow-and-deny' do
-      let(:model) { allow_and_deny_config }
-      let(:adapter) { allow_and_deny_policy_file }
+      let(:model) { model_config 'allow_and_deny' }
+      let(:adapter) { policy_file 'allow_and_deny' }
 
       requests = {
         %w[alice data1 read] => true,
@@ -314,8 +328,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with implicit priority' do
-      let(:model) { implicit_priority_config }
-      let(:adapter) { implicit_priority_policy_file }
+      let(:model) { model_config 'priorities/implicit' }
+      let(:adapter) { policy_file 'priorities/implicit' }
 
       requests = {
         %w[admin data1 read] => true,
@@ -329,10 +343,10 @@ describe Casbin::CoreEnforcer do
     # https://casbin.org/docs/en/priority-model#load-policy-with-priority-explicitly
     #
     # Related PR in Golang version - https://github.com/casbin/casbin/pull/714/files
-    # (we should add sorting by `p_priority`).
+    # (we should add sorting by `p_priority` after policy loading).
     xcontext 'with explicit priority' do
-      let(:model) { explicit_priority_config }
-      let(:adapter) { explicit_priority_policy_file }
+      let(:model) { model_config 'priorities/explicit' }
+      let(:adapter) { policy_file 'priorities/explicit' }
 
       requests = {
         %w[alice data1 write] => true,
@@ -344,8 +358,8 @@ describe Casbin::CoreEnforcer do
     end
 
     context 'with IP matching' do
-      let(:model) { ip_config }
-      let(:adapter) { ip_policy_file }
+      let(:model) { model_config 'ip' }
+      let(:adapter) { policy_file 'ip' }
 
       requests = {
         %w[192.168.2.1 data1 read] => true,

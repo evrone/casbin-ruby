@@ -88,6 +88,10 @@ describe Casbin::Rbac::DefaultRoleManager::RoleManager do
       role_manager.add_link('test1', 'test2', 'domain')
       expect(role_manager.has_link('test1', 'test2', 'domain')).to be_truthy
     end
+
+    context 'with matching function' do
+      before { role_manager.add_matching_func  }
+    end
   end
 
   it '#get_roles' do
