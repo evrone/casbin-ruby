@@ -19,7 +19,7 @@ module Casbin
       # https://casbin.org/docs/en/abac#how-to-use-abac
       # We support Unicode in attributes for the compatibility with Golang - https://golang.org/ref/spec#Identifiers
       def escape_assertion(string)
-        string.gsub /r\.(\w+)((?:\.[[:alpha:]_][[:alnum:]_]*)+)/ do |_|
+        string.gsub /\br\.(\w+)((?:\.[[:alpha:]_][[:alnum:]_]*)+)/ do |_|
           param = Regexp.last_match(1)
           attrs = Regexp.last_match(2)[1..-1].split('.').map do |attr|
             "['#{attr}']"
