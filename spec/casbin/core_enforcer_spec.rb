@@ -219,6 +219,32 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
+    # This does not implemented in Python version. Examples was taken from here:
+    # https://casbin.org/en/editor (select "RBAC with all pattern" option)
+    #
+    # We should add the separate matching function for domain.
+    # https://github.com/casbin/casbin/blob/0c7aac93d766aeddea324d7a16fd8be1c700bca5/enforcer.go#L661
+    xcontext 'with RBAC with all pattern' do
+      let(:model) { model_config 'rbac_with_all_pattern' }
+      let(:adapter) { policy_file 'rbac_with_all_pattern' }
+
+      requests = {
+        %w[/book/1 domain1 data1 read] => true,
+        %w[/book/1 domain2 data2 write] => true,
+
+        %w[/domain1/book/1 domain1 data1 read] => true,
+        %w[/domain1/book/1 domain2 data2 write] => false
+      }
+
+      before do
+        matching_func = ->(key1, key2) { Casbin::Util::BuiltinOperators.key_match2 key1, key2 }
+        enforcer.role_manager.add_matching_func matching_func
+        # enforcer.role_manager.add_domain_matching_func matching_func
+      end
+
+      it_behaves_like 'correctly enforces rules', requests
+    end
+
     context 'with ABAC' do
       let(:model) { model_config 'abac' }
 
@@ -339,7 +365,7 @@ describe Casbin::CoreEnforcer do
       it_behaves_like 'correctly enforces rules', requests
     end
 
-    # It seems that this does not implemented in Python version. Examples was taken from here:
+    # This does not implemented in Python version. Examples was taken from here:
     # https://casbin.org/docs/en/priority-model#load-policy-with-priority-explicitly
     #
     # Related PR in Golang version - https://github.com/casbin/casbin/pull/714/files
