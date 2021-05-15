@@ -3,6 +3,10 @@ Casbin for Ruby
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/casbin/lobby)
 
+---
+### ⚠️Attention⚠️! This project has been moved to a separate repository [CasbinRuby/casbin-ruby](https://github.com/CasbinRuby/casbin-ruby) in its own organization! All further development and development of additional components will be  there.
+---
+
 **News**: still worry about how to write the correct Casbin policy? ``Casbin online editor`` is coming to help! Try it
 at: http://casbin.org/editor/
 
